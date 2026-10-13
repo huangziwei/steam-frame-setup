@@ -1,0 +1,44 @@
+// Mac-style keys. Cmd arrives as Ctrl: via xremap in Desktop Mode, via the XKB option
+// altwin:ctrl_win in Game Mode (see ~/Works/Frame/changes/11). Option arrives as Alt.
+[
+  // ------------------------------------------------------------ integrated terminal
+  // Cmd+C copies when text is selected (and clears the selection, so the next Cmd/Ctrl+C
+  // interrupts the running program); with nothing selected it interrupts (SIGINT) as usual.
+  {
+    "key": "ctrl+c",
+    "command": "workbench.action.terminal.copyAndClearSelection",
+    "when": "terminalFocus && terminalTextSelected"
+  },
+  {
+    "key": "ctrl+v",
+    "command": "workbench.action.terminal.paste",
+    "when": "terminalFocus"
+  },
+  // Cmd+←/→ = line start/end, Cmd+Backspace = delete to line start (sent as Ctrl+A / E / U)
+  { "key": "ctrl+left",      "command": "workbench.action.terminal.sendSequence", "args": { "text": "\u0001" }, "when": "terminalFocus" },
+  { "key": "ctrl+right",     "command": "workbench.action.terminal.sendSequence", "args": { "text": "\u0005" }, "when": "terminalFocus" },
+  { "key": "ctrl+backspace", "command": "workbench.action.terminal.sendSequence", "args": { "text": "\u0015" }, "when": "terminalFocus" },
+
+  // ------------------------------------------------------------ editor and text fields
+  // Cmd+arrows = line start/end, top/bottom of file (+Shift selects)
+  { "key": "ctrl+left",        "command": "cursorHome",           "when": "textInputFocus" },
+  { "key": "ctrl+shift+left",  "command": "cursorHomeSelect",     "when": "textInputFocus" },
+  { "key": "ctrl+right",       "command": "cursorEnd",            "when": "textInputFocus" },
+  { "key": "ctrl+shift+right", "command": "cursorEndSelect",      "when": "textInputFocus" },
+  { "key": "ctrl+up",          "command": "cursorTop",            "when": "textInputFocus" },
+  { "key": "ctrl+shift+up",    "command": "cursorTopSelect",      "when": "textInputFocus" },
+  { "key": "ctrl+down",        "command": "cursorBottom",         "when": "textInputFocus" },
+  { "key": "ctrl+shift+down",  "command": "cursorBottomSelect",   "when": "textInputFocus" },
+  // Option+arrows = jump by word (+Shift selects)
+  { "key": "alt+left",         "command": "cursorWordLeft",            "when": "textInputFocus" },
+  { "key": "alt+shift+left",   "command": "cursorWordLeftSelect",      "when": "textInputFocus" },
+  { "key": "alt+right",        "command": "cursorWordEndRight",        "when": "textInputFocus" },
+  { "key": "alt+shift+right",  "command": "cursorWordEndRightSelect",  "when": "textInputFocus" },
+  // Option+Backspace / Option+Delete = delete word, Cmd+Backspace = delete to line start
+  { "key": "alt+backspace",    "command": "deleteWordLeft",       "when": "textInputFocus && !editorReadonly" },
+  { "key": "alt+delete",       "command": "deleteWordRight",      "when": "textInputFocus && !editorReadonly" },
+  { "key": "ctrl+backspace",   "command": "deleteAllLeft",        "when": "textInputFocus && !editorReadonly" },
+  // Cmd+Option+↑/↓ = add a cursor above/below (Cmd+Shift+↑/↓ now selects to top/bottom)
+  { "key": "ctrl+alt+up",      "command": "editor.action.insertCursorAbove", "when": "editorTextFocus" },
+  { "key": "ctrl+alt+down",    "command": "editor.action.insertCursorBelow", "when": "editorTextFocus" }
+]

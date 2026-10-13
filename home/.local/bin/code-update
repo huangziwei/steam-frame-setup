@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# code-update — install or update Visual Studio Code (official Microsoft build)
+# into ~/.local/opt/vscode. The previous version is kept in ~/.local/opt/vscode.previous.
+#
+# Usage: code-update            install / update to the latest stable release
+#        code-update --force    reinstall even if already up to date
+#        code-update --rollback swap back to the previous version
+set -euo pipefail
+
+DEST="$HOME/.local/opt/vscode"
+PREV="$DEST.previous"
+
+case "$(uname -m)" in
+  aarch64) PLATFORM=linux-arm64 ;;
+  x86_64)  PLATFORM=linux-x64 ;;
+  *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+esac
+
+installed_version() {
+  python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' \
+    "$1/resources/app/package.json" 2>/dev/null || echo none
+}
+
+ensure_not_running() {
+  if pgrep -f "^$DEST/code" >/dev/null; then
+    echo "VS Code is running — quit it first (Cmd+Q), then re-run code-update." >&2
+    exit 1
+  fi
+}
+
+if [[ "${1:-}" == "--rollback" ]]; then
+  [[ -d "$PREV" ]] || { echo "No previous version to roll back to." >&2; exit 1; }
+  ensure_not_running
+  mv "$DEST" "$DEST.rollback-tmp" && mv "$PREV" "$DEST" && mv "$DEST.rollback-tmp" "$PREV"
+  echo "Rolled back: now $(installed_version "$DEST") (kept $(installed_version "$PREV") as previous)."
+  exit 0
+fi
+
+meta=$(curl -fsSL "https://update.code.visualstudio.com/api/update/$PLATFORM/stable/latest")
+read -r latest url sha < <(python3 -I -c '
+import json,sys; d=json.loads(sys.argv[1]); print(d["productVersion"], d["url"], d["sha256hash"])' "$meta")
+
+current=$(installed_version "$DEST")
+if [[ "$current" == "$latest" && "${1:-}" != "--force" ]]; then
+  echo "VS Code $current is already the latest."
+  exit 0
+fi
+echo "Installing VS Code $latest ($PLATFORM) — currently installed: $current"
+ensure_not_running
+
+mkdir -p "$(dirname "$DEST")"
+tmp=$(mktemp -d "$(dirname "$DEST")/.vscode-update.XXXXXX")   # same filesystem → atomic mv
+trap 'rm -rf "$tmp"' EXIT
+
+curl -fL --progress-bar -o "$tmp/vscode.tar.gz" "$url"
+echo "$sha  $tmp/vscode.tar.gz" | sha256sum -c --quiet || { echo "Checksum mismatch — aborting." >&2; exit 1; }
+mkdir "$tmp/new"
+tar -xzf "$tmp/vscode.tar.gz" -C "$tmp/new" --strip-components=1
+[[ -x "$tmp/new/bin/code" ]] || { echo "Unexpected archive layout — aborting." >&2; exit 1; }
+
+if [[ -d "$DEST" ]]; then
+  rm -rf "$PREV"
+  mv "$DEST" "$PREV"
+fi
+mv "$tmp/new" "$DEST"
+echo "Done: VS Code $(installed_version "$DEST") installed in $DEST"

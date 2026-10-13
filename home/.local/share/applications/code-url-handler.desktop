@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Visual Studio Code - URL Handler
+Comment=Handles vscode:// links (e.g. GitHub sign-in callbacks)
+Exec=/home/steamos/.local/opt/vscode/code --open-url %U
+Icon=/home/steamos/.local/opt/vscode/resources/app/resources/linux/code.png
+Type=Application
+NoDisplay=true
+StartupNotify=true
+Categories=Utility;TextEditor;Development;IDE;
+MimeType=x-scheme-handler/vscode;
+Keywords=vscode;

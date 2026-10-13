@@ -1,0 +1,13 @@
+{
+  // Integrated terminal uses Homebrew zsh + Oh My Zsh (Works/Frame change 08)
+  "terminal.integrated.profiles.linux": {
+    "zsh": { "path": "/home/linuxbrew/.linuxbrew/bin/zsh", "args": ["-l"] }
+  },
+  "terminal.integrated.defaultProfile.linux": "zsh",
+
+  // No built-in AI: turns off and hides Copilot chat, inline suggestions and the Chat view.
+  // Claude Code runs in the integrated terminal instead (Works/Frame change 14).
+  "chat.disableAIFeatures": true,
+  // Keep the right-hand side bar (where Chat lives) closed in new windows and folders
+  "workbench.secondarySideBar.defaultVisibility": "hidden"
+}

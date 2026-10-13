@@ -1,0 +1,9 @@
+$include /etc/inputrc
+
+# Option+Left/Right: jump by word (Konsole sends Alt+arrow as \e[1;3D / \e[1;3C)
+"\e[1;3D": backward-word
+"\e[1;3C": forward-word
+
+# Case-insensitive tab completion, like macOS's default filesystem feel
+set completion-ignore-case on
+set show-all-if-ambiguous on

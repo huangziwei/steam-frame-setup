@@ -1,0 +1,12 @@
+[Unit]
+Description=Mac-style Cmd key in Game Mode (Cmd acts as Ctrl)
+PartOf=gamescope-session.target
+After=gamescope-session.service
+
+[Service]
+ExecStart=%h/.local/bin/mac-keys-gamemode
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=gamescope-session.target

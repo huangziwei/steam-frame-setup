@@ -1,0 +1,26 @@
+#
+# ~/.bashrc
+#
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+PS1='[\u@\h \W]\$ '
+# Homebrew (Works/Frame change 07). Before ~/.local/bin so our own tools (uv, code, xremap) win over brew ones.
+[ -x /home/linuxbrew/.linuxbrew/bin/brew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+export PATH="$HOME/.local/bin:$PATH"
+
+# uv / uvx tab completion (Works/Frame change 05)
+if command -v uv >/dev/null; then
+  eval "$(uv generate-shell-completion bash)"
+  eval "$(uvx --generate-shell-completion bash)"
+fi
+
+# Rust (rustup/cargo) on PATH + tab completion (Works/Frame change 06)
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+if command -v rustup >/dev/null; then
+  eval "$(rustup completions bash rustup)"
+  eval "$(rustup completions bash cargo)"
+fi

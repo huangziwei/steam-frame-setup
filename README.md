@@ -2,9 +2,17 @@
 
 A record of every change made to this Steam Frame (SteamOS, KDE Plasma 6 on Wayland, aarch64), with how to undo each one.
 
-Each change has its own file in [`changes/`](changes/). Every file lists what was changed, why, the exact files touched, and the commands to revert it.
+## Setting up a new Frame
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/huangziwei/steam-frame-setup/main/bootstrap.sh | bash
+```
+
+This runs [`setup.sh`](setup.sh), which redoes changes 01–12 and 14 using the config files in [`home/`](home/). It asks for a password (once, for Homebrew) and for you to paste an SSH key on GitHub. See [13](changes/13-setup-script.md) for details.
 
 ## Changes
+
+Each change has its own file in [`changes/`](changes/). Every file lists what was changed, why, the exact files touched, and the commands to revert it.
 
 | # | Date | Change | Status | Needs sudo |
 |---|------|--------|--------|------------|
@@ -20,6 +28,8 @@ Each change has its own file in [`changes/`](changes/). Every file lists what wa
 | 10 | 2026-10-12 | [Claude status line + usage tracking (`claude-usage`)](changes/10-claude-usage-statusline.md) | Active | No |
 | 11 | 2026-10-13 | [Mac-style keys in Game Mode (Logitech Pebble)](changes/11-mac-keys-game-mode.md) | Active | No |
 | 12 | 2026-10-13 | [git 2.56 (Homebrew) + GitHub over SSH](changes/12-git-github-ssh.md) | Active | No |
+| 13 | 2026-10-13 | [`setup.sh`: set up another Frame the same way](changes/13-setup-script.md) | Active | New Frame only |
+| 14 | 2026-10-13 | [VS Code without built-in AI; Claude Code from the terminal only](changes/14-vscode-no-ai.md) | Active | No |
 
 ## Commands added
 
@@ -35,6 +45,7 @@ Each change has its own file in [`changes/`](changes/). Every file lists what wa
 | `git` | git 2.56 from Homebrew; GitHub via SSH (`ssh -T git@github.com` to test) |
 | `omz update` | Update Oh My Zsh |
 | `claude-usage` | Claude Code cost/token report (`daily`, `weekly`, `monthly`, `sessions`) |
+| `./setup.sh --diff` / `--collect` | Compare / sync this Frame's config files with the repo's `home/` (in `~/Works/Frame`) |
 
 ## Where things get installed
 

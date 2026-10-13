@@ -1,0 +1,13 @@
+{
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "/home/steamos/.local/bin/claude-statusline"
+  },
+  "theme": "dark",
+  "tui": "fullscreen"
+}

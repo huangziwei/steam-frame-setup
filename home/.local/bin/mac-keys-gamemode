@@ -1,0 +1,17 @@
+#!/bin/bash
+# Mac-style Cmd key in Game Mode (Steam's VR session). See ~/Works/Frame/changes/11.
+#
+# In Game Mode Steam reads the keyboard itself, so xremap can't see it. Instead, this sets an
+# XKB option on Game Mode's X displays (where VS Code, Konsole etc. run): Cmd (Super) becomes Ctrl.
+# It re-checks every 5 s and re-applies if a display was restarted or its layout was reset.
+OPT=altwin:ctrl_win
+while true; do
+  for s in /tmp/.X11-unix/X*; do
+    d=":${s##*X}"
+    # 0x85 = left Cmd. Once the option is active it shows up under "control".
+    if ! DISPLAY=$d xmodmap -pm 2>/dev/null | grep -q '^control.*(0x85)'; then
+      DISPLAY=$d setxkbmap -option "$OPT" 2>/dev/null && echo "applied $OPT on $d"
+    fi
+  done
+  sleep 5
+done

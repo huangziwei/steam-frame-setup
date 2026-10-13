@@ -1,0 +1,75 @@
+# macOS-style keyboard for KDE Plasma (Wayland) on SteamOS.
+#
+# Core idea: both Cmd keys become *Right* Ctrl, the physical Ctrl key stays *Left* Ctrl.
+# So Cmd+C/V/X/Z/A/S/T/W/Q/F/L/... "just work" in GUI apps, and rules below can
+# still tell Cmd (Ctrl_R) apart from the real Ctrl (Ctrl_L) where it matters.
+#
+# Service:  systemctl --user {status,restart} xremap
+# Logs:     journalctl --user -u xremap -f   (shows the active window class)
+
+modmap:
+  - name: Cmd acts as Ctrl
+    remap:
+      Super_L: Control_R
+      Super_R: Control_R
+
+keymap:
+  # ---------------------------------------------------------------- terminals
+  # Cmd = Ctrl+Shift (terminal copy/paste/tabs); physical Ctrl stays Ctrl (Ctrl+C = SIGINT).
+  - name: Terminal
+    application:
+      only: /(?i)konsole|yakuake|kitty|alacritty|foot|wezterm|ptyxis|terminal/
+    remap:
+      Ctrl_R-c: C-Shift-c          # copy
+      Ctrl_R-v: C-Shift-v          # paste
+      Ctrl_R-x: C-Shift-c          # "cut" = copy (can't cut terminal output)
+      Ctrl_R-t: C-Shift-t          # new tab
+      Ctrl_R-w: C-Shift-w          # close tab
+      Ctrl_R-n: C-Shift-n          # new window
+      Ctrl_R-f: C-Shift-f          # find
+      Ctrl_R-a: C-Shift-a          # select all
+      Ctrl_R-k: C-Shift-k          # clear scrollback (Konsole: Clear Scrollback and Reset)
+      Ctrl_R-q: C-Shift-q          # quit
+      Ctrl_R-d: C-Shift-9          # split left/right (Konsole Ctrl+( ), like iTerm Cmd+D
+      Ctrl_R-Shift-d: C-Shift-0    # split top/bottom (Konsole Ctrl+) )
+      Ctrl_R-left: Home            # line start
+      Ctrl_R-right: End            # line end
+      Ctrl_R-backspace: C-u        # delete to line start
+      Ctrl_R-leftbrace: Shift-left   # previous tab (Konsole)
+      Ctrl_R-rightbrace: Shift-right # next tab (Konsole)
+      # Don't let Cmd send dangerous control chars into the shell
+      Ctrl_R-z: []                 # would be Ctrl+Z (suspend job)
+      Ctrl_R-s: []                 # would be Ctrl+S (freeze output)
+      Ctrl_R-backslash: []         # would be Ctrl+\ (SIGQUIT)
+
+  # ---------------------------------------------------------------- browsers
+  - name: Browser back/forward
+    application:
+      only: /(?i)firefox|chrom|brave|vivaldi|edge/
+    remap:
+      Ctrl_R-leftbrace: Alt-left
+      Ctrl_R-rightbrace: Alt-right
+
+  # ---------------------------------------------------------------- GUI text editing
+  - name: Mac text navigation (non-terminal)
+    application:
+      not: /(?i)konsole|yakuake|kitty|alacritty|foot|wezterm|ptyxis|terminal/
+    remap:
+      Ctrl_R-left: Home            # + Shift selects, via inexact match
+      Ctrl_R-right: End
+      Ctrl_R-up: C-Home
+      Ctrl_R-down: C-End
+      Ctrl_R-backspace: [Shift-Home, Backspace]
+      Alt-left: C-left             # word jump
+      Alt-right: C-right
+      Alt-backspace: C-backspace   # delete word
+      Alt-delete: C-delete
+
+  # ---------------------------------------------------------------- everywhere
+  - name: Global
+    remap:
+      Ctrl_R-space: Alt-space      # Cmd+Space -> KRunner (Spotlight)
+      # Cmd+Tab: Cmd is Ctrl_R, so KWin sees Ctrl+Tab, which is bound to the window switcher.
+      # Keep physical Ctrl+Tab doing "next tab" in apps by sending Ctrl+PageDown instead.
+      Ctrl_L-tab: C-pagedown
+      Ctrl_L-Shift-tab: C-pageup

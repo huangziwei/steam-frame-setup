@@ -1,0 +1,16 @@
+[Unit]
+Description=xremap - macOS-style keyboard remapping (Desktop Mode)
+PartOf=plasma-workspace.target
+After=plasma-workspace.target
+
+[Service]
+# Grab every keyboard (incl. ones paired later; --watch=device picks them up live),
+# except the headset's own built-in input devices.
+ExecStart=%h/.local/bin/xremap --watch=device,config \
+  --ignore pmic_pwrkey --ignore pmic_resin --ignore gpio-keys --ignore steamos-manager --ignore als31300 \
+  %h/.config/xremap/config.yml
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=plasma-workspace.target
