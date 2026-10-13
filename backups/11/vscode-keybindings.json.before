@@ -1,0 +1,15 @@
+// Mac-style copy/paste in the integrated terminal (Cmd arrives as Ctrl via xremap).
+// Cmd+C copies when text is selected (and clears the selection, so the next Cmd/Ctrl+C
+// interrupts the running program); with nothing selected it interrupts (SIGINT) as usual.
+[
+  {
+    "key": "ctrl+c",
+    "command": "workbench.action.terminal.copyAndClearSelection",
+    "when": "terminalFocus && terminalTextSelected"
+  },
+  {
+    "key": "ctrl+v",
+    "command": "workbench.action.terminal.paste",
+    "when": "terminalFocus"
+  }
+]

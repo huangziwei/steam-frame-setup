@@ -1,0 +1,13 @@
+[Unit]
+Description=xremap - macOS-style keyboard remapping (Magic Keyboard)
+PartOf=plasma-workspace.target
+After=plasma-workspace.target
+
+[Service]
+# Only grab the Apple keyboard; --watch=device re-attaches when Bluetooth reconnects.
+ExecStart=%h/.local/bin/xremap --watch=device,config --device "Magic Keyboard" %h/.config/xremap/config.yml
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=plasma-workspace.target
