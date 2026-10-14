@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# setup.sh — set up a Steam Frame like the first one (changes/01–12 in this repo).
+# setup.sh — set up a Steam Frame like the first one (changes/01–15 in this repo).
 #
 # Usage: ./setup.sh             run every step (safe to re-run: finished steps are skipped)
 #        ./setup.sh STEP...     run only these steps, e.g. ./setup.sh vscode keyboard
@@ -26,7 +26,7 @@ XREMAP_ZIP_SHA256="44374eec093380afab024c656ca430145450ea155153626e306fd65d6240b
 # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints
 GITHUB_ED25519_FP="SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU"
 
-STEPS=(sudo homebrew git shell konsole uv rust vscode keyboard desktop claude github claude-usage)
+STEPS=(sudo homebrew git shell konsole uv rust vscode keyboard desktop claude github claude-usage tailscale)
 declare -A ABOUT=(
   [sudo]="set a password for sudo if needed (only for installing Homebrew)"
   [homebrew]="Homebrew (07)"
@@ -41,6 +41,7 @@ declare -A ABOUT=(
   [claude]="Claude Code + its settings, no VS Code extension auto-install (10, 14)"
   [github]="SSH key for GitHub (12) — asks you to paste the key on github.com"
   [claude-usage]="claude-usage status line + reports (10)"
+  [tailscale]="Tailscale: reach this Frame by name from the Mac (15) — asks for a name, sign-in link"
 )
 
 bold=$'\e[1m' green=$'\e[32m' yellow=$'\e[33m' red=$'\e[31m' reset=$'\e[0m'
@@ -303,6 +304,18 @@ step_claude-usage() {
   local tools; tools=$(uv tool list 2>/dev/null || true)
   [[ $tools == *claude-usage* ]] || uv tool install --editable "$dir"
   ok "claude-usage and claude-statusline in ~/.local/bin"
+}
+
+step_tailscale() {
+  step "Tailscale (changes/15)"
+  install_file .local/bin/tailscale-update
+  local ts=/var/opt/tailscale/tailscale name=""
+  if [[ $("$ts" status --json 2>/dev/null | python3 -I -c 'import json,sys; print(json.load(sys.stdin).get("BackendState",""))' 2>/dev/null) != Running ]]; then
+    name=$(ask "Name for this Frame on Tailscale (the first one is 'frame') [frame2]:")
+    name=${name:-frame2}
+  fi
+  "$HOME/.local/bin/tailscale-update" ${name:+--hostname "$name"}
+  MANUAL+=("Tailscale admin (login.tailscale.com → Machines → this Frame → ⋯): Disable key expiry")
 }
 
 # ------------------------------------------------------------------------------------- modes

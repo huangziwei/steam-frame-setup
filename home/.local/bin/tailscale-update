@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# tailscale-update — install or update Tailscale (official static build) on SteamOS, change 15.
+#
+# Usage: tailscale-update                  install / update to the latest stable release,
+#                                          then sign in if this device isn't signed in yet
+#        tailscale-update --hostname NAME  also set this device's name on Tailscale (e.g. frame2)
+#
+# Programs:  /var/opt/tailscale/{tailscale,tailscaled}   owned by root; /var survives SteamOS updates
+# Service:   /etc/systemd/system/tailscaled.service      /etc survives SteamOS updates
+# Settings:  /etc/default/tailscaled                     (port, extra flags; only created if missing)
+# State:     /var/lib/tailscale                          (this device's identity — keep it)
+# CLI:       ~/.local/bin/tailscale -> /var/opt/tailscale/tailscale
+#
+# Not Homebrew on purpose: tailscaled runs as root, and Homebrew's files are writable by your user.
+set -euo pipefail
+
+DEST=/var/opt/tailscale
+UNIT=/etc/systemd/system/tailscaled.service
+DEFAULTS=/etc/default/tailscaled
+
+hostname=""
+case "${1:-}" in
+  --hostname) hostname=${2:?"--hostname needs a name"} ;;
+  "") ;;
+  *) sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac
+
+case "$(uname -m)" in
+  aarch64) ARCH=arm64 ;;
+  x86_64)  ARCH=amd64 ;;
+  *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+esac
+
+latest=$(curl -fsSL 'https://pkgs.tailscale.com/stable/?mode=json' \
+  | python3 -I -c 'import json,sys; print(json.load(sys.stdin)["TarballsVersion"])')
+installed=$("$DEST/tailscale" version 2>/dev/null | sed -n 1p || true)
+installed=${installed:-none}
+
+if [[ $installed == "$latest" ]]; then
+  echo "Tailscale $installed is already the latest."
+else
+  echo "Installing Tailscale $latest (installed: $installed)…"
+  t=$(mktemp -d); trap 'rm -rf "$t"' EXIT
+  name="tailscale_${latest}_${ARCH}"
+  curl -fsSL -o "$t/$name.tgz" "https://pkgs.tailscale.com/stable/$name.tgz"
+  [[ $(sha256sum "$t/$name.tgz" | cut -d' ' -f1) == "$(curl -fsSL "https://pkgs.tailscale.com/stable/$name.tgz.sha256")" ]] \
+    || { echo "Checksum mismatch — not installing." >&2; exit 1; }
+  tar xzf "$t/$name.tgz" -C "$t"
+  # The official unit file, pointed at our install location
+  sed "s|/usr/sbin/tailscaled|$DEST/tailscaled|g; s|/usr/bin/tailscale|$DEST/tailscale|g" \
+    "$t/$name/systemd/tailscaled.service" >"$t/tailscaled.service"
+
+  sudo -v </dev/tty
+  sudo install -d -m 755 -o root -g root "$DEST"
+  sudo install -m 755 -o root -g root "$t/$name/tailscale" "$t/$name/tailscaled" "$DEST/"
+  sudo install -m 644 -o root -g root "$t/tailscaled.service" "$UNIT"
+  [[ -f $DEFAULTS ]] || sudo install -D -m 644 -o root -g root "$t/$name/systemd/tailscaled.defaults" "$DEFAULTS"
+  sudo systemctl daemon-reload
+  sudo systemctl enable tailscaled.service >/dev/null 2>&1
+  restart=1
+  echo "Installed Tailscale $latest."
+fi
+
+# SteamOS's kernel has nftables (used by firewalld) but not the old iptables modules that
+# Tailscale tries by default, so tell it to use nftables.
+if ! grep -qs '^TS_DEBUG_FIREWALL_MODE=' "$DEFAULTS"; then
+  sudo -v </dev/tty
+  printf '\n# SteamOS kernel has no legacy iptables modules (changes/15)\nTS_DEBUG_FIREWALL_MODE=nftables\n' \
+    | sudo tee -a "$DEFAULTS" >/dev/null
+  restart=1
+fi
+if [[ -n ${restart:-} ]]; then sudo systemctl restart tailscaled.service; fi
+
+mkdir -p "$HOME/.local/bin"
+ln -sfn "$DEST/tailscale" "$HOME/.local/bin/tailscale"
+
+# Wait for the service to answer, then sign in if needed
+for _ in {1..20}; do "$DEST/tailscale" status --json >/dev/null 2>&1 && break; sleep 0.5; done
+state=$("$DEST/tailscale" status --json 2>/dev/null \
+  | python3 -I -c 'import json,sys; print(json.load(sys.stdin).get("BackendState",""))' || true)
+if [[ $state != Running ]]; then
+  echo
+  echo "Sign this device in: open the link below (on any device, e.g. the Mac) and log in"
+  echo "with the same account as your other devices."
+  # --operator lets your user run tailscale commands without sudo
+  sudo "$DEST/tailscale" up --operator="$USER" ${hostname:+--hostname="$hostname"} </dev/tty
+elif [[ -n $hostname ]]; then
+  "$DEST/tailscale" set --hostname="$hostname"
+fi
+
+echo
+"$DEST/tailscale" status
+echo
+echo "This device: $("$DEST/tailscale" ip -4) — reach it from your other devices as $("$DEST/tailscale" status --json \
+  | python3 -I -c 'import json,sys; print(json.load(sys.stdin)["Self"]["DNSName"].split(".")[0])')"

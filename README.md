@@ -8,7 +8,7 @@ A record of every change made to this Steam Frame (SteamOS, KDE Plasma 6 on Wayl
 curl -fsSL https://raw.githubusercontent.com/huangziwei/steam-frame-setup/main/bootstrap.sh | bash
 ```
 
-This runs [`setup.sh`](setup.sh), which redoes changes 01–12 and 14 using the config files in [`home/`](home/). It asks for a password (once, for Homebrew) and for you to paste an SSH key on GitHub. See [13](changes/13-setup-script.md) for details.
+This runs [`setup.sh`](setup.sh), which redoes changes 01–12, 14 and 15 using the config files in [`home/`](home/). It asks for a password (for Homebrew and Tailscale), for you to paste an SSH key on GitHub, and for you to open a Tailscale sign-in link. See [13](changes/13-setup-script.md) for details.
 
 ## Changes
 
@@ -30,6 +30,7 @@ Each change has its own file in [`changes/`](changes/). Every file lists what wa
 | 12 | 2026-10-13 | [git 2.56 (Homebrew) + GitHub over SSH](changes/12-git-github-ssh.md) | Active | No |
 | 13 | 2026-10-13 | [`setup.sh`: set up another Frame the same way](changes/13-setup-script.md) | Active | New Frame only |
 | 14 | 2026-10-13 | [VS Code without built-in AI; Claude Code from the terminal only](changes/14-vscode-no-ai.md) | Active | No |
+| 15 | 2026-10-14 | [Tailscale: reach the Frame by name (`frame`) from the Mac — SSH, remote desktop, Steam Link](changes/15-tailscale.md) | Active | Yes |
 
 ## Commands added
 
@@ -45,6 +46,8 @@ Each change has its own file in [`changes/`](changes/). Every file lists what wa
 | `git` | git 2.56 from Homebrew; GitHub via SSH (`ssh -T git@github.com` to test) |
 | `omz update` | Update Oh My Zsh |
 | `claude-usage` | Claude Code cost/token report (`daily`, `weekly`, `monthly`, `sessions`) |
+| `tailscale-update` | Install / update Tailscale (asks for sudo) |
+| `tailscale status` | List your devices on Tailscale and their fixed `100.x` addresses |
 | `./setup.sh --diff` / `--collect` | Compare / sync this Frame's config files with the repo's `home/` (in `~/Works/Frame`) |
 
 ## Where things get installed
@@ -55,6 +58,7 @@ Each change has its own file in [`changes/`](changes/). Every file lists what wa
 | Python + packages | uv |
 | Rust | rustup |
 | VS Code | `code-update` |
+| Tailscale | `tailscale-update` (not Homebrew: it runs as root, see [15](changes/15-tailscale.md)) |
 | Never | `pacman` (SteamOS updates wipe it) |
 
 **Shells:** new terminals (Konsole, VS Code) open **zsh + Oh My Zsh** (`~/.zshrc`). The account's login shell is still bash (`~/.bashrc`), and both files set the same PATH.
