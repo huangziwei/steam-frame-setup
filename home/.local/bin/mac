@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# mac — show the Mac mini's screen in a window (macOS Screen Sharing via Remmina, over Tailscale), change 16.
+# Runs in the background, so the terminal stays usable. Close the window to disconnect.
+# The connection profile is created on the first run. After that it belongs to Remmina, which saves
+# your toolbar choices (scaling, view mode) and a saved password in it.
+set -euo pipefail
+
+MAC_HOST=mac-mini-von-ziwei   # Tailscale name of the Mac (changes/15)
+MAC_USER=ziweih               # short username on the Mac
+PROFILE="$HOME/.var/app/org.remmina.Remmina/data/remmina/mac-mini.remmina"
+
+if [[ ! -f $PROFILE ]]; then
+  mkdir -p "$(dirname "$PROFILE")"
+  # scale=0 + viewmode=3: full size, scroll to the display you want (VNC sends both Mac displays as one picture)
+  cat >"$PROFILE" <<EOF
+[remmina]
+name=Mac mini
+protocol=VNC
+server=$MAC_HOST
+username=$MAC_USER
+quality=9
+colordepth=24
+scale=0
+viewmode=3
+window_width=1920
+window_height=1080
+showcursor=0
+viewonly=0
+disableclipboard=0
+EOF
+fi
+
+setsid -f flatpak run org.remmina.Remmina -c "$PROFILE" >/dev/null 2>&1

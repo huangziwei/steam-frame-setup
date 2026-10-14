@@ -44,6 +44,7 @@ Re-running is safe: finished steps are skipped and files that are already right 
 | `github` | SSH key, GitHub host key checked against GitHub's published fingerprint, waits until GitHub accepts the key, switches this repo to SSH | 12 |
 | `claude-usage` | Clones `huangziwei/claude-usage` and runs `uv tool install --editable` | 10 |
 | `tailscale` | `tailscale-update` (installs Tailscale, SHA-256 checked, needs sudo), asks for a name (default `frame2`), prints a sign-in link | 15 |
+| `mac-screen` | Remmina from Flathub (user install, ~1.5 GB with its runtime, shows progress) and the `mac` command | 16 |
 
 Versions: most tools install their **latest** release, each with its own checksum check. Only xremap is pinned (0.15.14), because its key-config format could change between versions.
 
@@ -53,6 +54,7 @@ Versions: most tools install their **latest** release, each with its own checksu
 - Bluetooth pairing of the Pebble and **Fn+O** (macOS mode).
 - Signing in: Claude Code, and VS Code accounts if you use them.
 - Tailscale: opening the sign-in link (on the Mac is fine), then **Disable key expiry** for the new Frame in the Tailscale admin page.
+- Turning on Screen Sharing on the Mac, and typing the Mac password the first time `mac` connects.
 - Adding VS Code or Konsole to the Steam library, if you launch them that way in Game Mode.
 - The 1920×1080 desktop (04) and Cmd+Tab (01) take effect the next time Desktop Mode starts.
 

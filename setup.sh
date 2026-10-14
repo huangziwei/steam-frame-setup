@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# setup.sh — set up a Steam Frame like the first one (changes/01–15 in this repo).
+# setup.sh — set up a Steam Frame like the first one (changes/01–16 in this repo).
 #
 # Usage: ./setup.sh             run every step (safe to re-run: finished steps are skipped)
 #        ./setup.sh STEP...     run only these steps, e.g. ./setup.sh vscode keyboard
@@ -26,7 +26,7 @@ XREMAP_ZIP_SHA256="44374eec093380afab024c656ca430145450ea155153626e306fd65d6240b
 # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints
 GITHUB_ED25519_FP="SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU"
 
-STEPS=(sudo homebrew git shell konsole uv rust vscode keyboard desktop claude github claude-usage tailscale)
+STEPS=(sudo homebrew git shell konsole uv rust vscode keyboard desktop claude github claude-usage tailscale mac-screen)
 declare -A ABOUT=(
   [sudo]="set a password for sudo if needed (only for installing Homebrew)"
   [homebrew]="Homebrew (07)"
@@ -42,6 +42,7 @@ declare -A ABOUT=(
   [github]="SSH key for GitHub (12) — asks you to paste the key on github.com"
   [claude-usage]="claude-usage status line + reports (10)"
   [tailscale]="Tailscale: reach this Frame by name from the Mac (15) — asks for a name, sign-in link"
+  [mac-screen]="Remmina + the mac command: the Mac's screen in a window (16) — ~1.5 GB download"
 )
 
 bold=$'\e[1m' green=$'\e[32m' yellow=$'\e[33m' red=$'\e[31m' reset=$'\e[0m'
@@ -316,6 +317,18 @@ step_tailscale() {
   fi
   "$HOME/.local/bin/tailscale-update" ${name:+--hostname "$name"}
   MANUAL+=("Tailscale admin (login.tailscale.com → Machines → this Frame → ⋯): Disable key expiry")
+}
+
+step_mac-screen() {
+  step "Mac screen in a window: Remmina (changes/16)"
+  flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+  if ! flatpak info --user org.remmina.Remmina >/dev/null 2>&1; then
+    echo "  Downloading Remmina and the GNOME runtime it needs: about 1.5 GB, often 10+ minutes."
+    flatpak install --user --noninteractive -y flathub org.remmina.Remmina
+  fi
+  ok "Remmina $(flatpak info --user org.remmina.Remmina | awk '/Version:/ {print $2}')"
+  install_file .local/bin/mac
+  MANUAL+=("On the Mac: System Settings → General → Sharing → Screen Sharing on (only your user); then run: mac")
 }
 
 # ------------------------------------------------------------------------------------- modes
